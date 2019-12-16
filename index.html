@@ -1,8 +1,41 @@
 <html>
 	<head>
+		<meta charset="utf-8">
 		<title>CF-userinfo</title>
 	</head>
 	<body>
-		<h1>Hello World</h1>
+		<input id="cfh" type="text" name="user_handle" placeholder="handle">
+		<button onclick="show_user()">Find</button>
+		<h2>Solved Problem</h2>
+		<ol id="solved">
+		</ol>	
 	</body>
+	<script>
+function show_user() {
+	const input = document.getElementById("cfh");
+	const ul = document.getElementById("solved");
+	const handle = input.value;
+
+	const url = "https://codeforces.com/api/user.status?handle=" + handle + "&from=1";
+	fetch(url).then(function(response) {
+		response.text().then(function(text) {
+			const obj = JSON.parse(text);
+			const list = obj.result;
+			for (let i = list.length - 1; i >= 0; i--) {
+				if (list[i].verdict === "OK") {
+					const problemLink = "https://codeforces.com/problemset/problem/" + list[i].problem.contestId + "/" + list[i].problem.index;
+					const li = document.createElement("li");
+					const a = document.createElement("a");
+					a.innerHTML = list[i].problem.name;
+					a.setAttribute("href", problemLink);
+					li.innerHTML = list[i].problem.rating + ": ";
+					li.appendChild(a);
+					
+					ul.appendChild(li);
+				}
+			}	
+		});
+	});
+}
+	</script>
 </html>
