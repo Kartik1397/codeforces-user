@@ -26,7 +26,7 @@ function show_user() {
 					const problemLink = "https://codeforces.com/problemset/problem/" + list[i].problem.contestId + "/" + list[i].problem.index;
 					const li = document.createElement("li");
 					const a = document.createElement("a");
-					a.innerHTML = list[i].problem.name;
+					a.innerHTML = list[i].problem.index + "-" + list[i].problem.name;
 					a.setAttribute("href", problemLink);
 					li.innerHTML = list[i].problem.rating + ": ";
 					li.appendChild(a);
