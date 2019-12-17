@@ -3,37 +3,107 @@
 		<meta charset="utf-8">
 		<title>CF-userinfo</title>
 	</head>
-	<body style="padding-left: 100px; margin-left:20px">
-		<input id="cfh" type="text" name="user_handle" placeholder="handle">
-		<button onclick="show_user()">Find</button>
-		<h2>Solved Problem</h2>
-		<ol id="solved">
-		</ol>	
+	<style>
+
+body {
+		background-color: #fcfcfc;
+}
+
+table {
+	font-family: cursive;
+	width: 100%;
+	color: #000000;
+	font-size: .9em;
+	margin-top: 20px;
+}
+
+table, tr, td, th {
+	border: 1px solid #d0d0d0;
+	border-collapse: collapse;
+}
+
+td, th {
+	width: auto;
+	padding: 5px 5px;
+}
+
+th {
+	font-weight: bold;
+	background-color: #72d5f2;
+}
+a {
+	color: #000000;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #36bcff;
+}
+
+input {
+		width: 70%;
+}
+
+button {
+		width: 29%;
+}
+
+.top {
+	width: 800px;
+	margin: 0 auto;
+}
+	</style>
+	<body>
+		<div class="top">
+			<input id="cfh" type="text" name="user_handle" placeholder="handle">
+			<button onclick="show_user()">Find</button>
+			<table class="status-table" id="status">
+				<tr>
+					<th>#</th>
+					<th>Problem Name</th>
+					<th>Rating</th>
+				</tr>
+			</table>
+		</div>
 	</body>
 	<script>
+
 function show_user() {
 	const input = document.getElementById("cfh");
 	const ul = document.getElementById("solved");
 	const handle = input.value;
+	const table = document.getElementById("status");
 
 	const url = "https://codeforces.com/api/user.status?handle=" + handle + "&from=1";
+
 	fetch(url).then(function(response) {
 		response.text().then(function(text) {
 			const obj = JSON.parse(text);
 			const list = obj.result;
-			for (let i = list.length - 1; i >= 0; i--) {
-				if (list[i].verdict === "OK") {
-					const problemLink = "https://codeforces.com/problemset/problem/" + list[i].problem.contestId + "/" + list[i].problem.index;
-					const li = document.createElement("li");
-					const a = document.createElement("a");
-					a.innerHTML = list[i].problem.index + "-" + list[i].problem.name;
-					a.setAttribute("href", problemLink);
-					li.innerHTML = list[i].problem.rating + ": ";
-					li.appendChild(a);
-					
-					ul.appendChild(li);
-				}
-			}	
+
+			for (let i = 0; i < list.length; i++) {
+				const row = document.createElement("tr");
+				const col_name = document.createElement("td");
+				const col_srno = document.createElement("td");
+				const col_rating = document.createElement("td");
+
+				const a = document.createElement("a");
+				const problemLink = "https://codeforces.com/problemset/problem/" + list[i].problem.contestId + "/" + list[i].problem.index;
+
+
+				a.setAttribute("href", problemLink);
+				a.innerHTML = list[i].problem.contestId + list[i].problem.index + " " + list[i].problem.name;
+
+				col_srno.innerHTML = i+1;
+				col_name.appendChild(a);
+				col_rating.innerHTML = list[i].problem.rating;
+
+				row.appendChild(col_srno);
+				row.appendChild(col_name);
+				row.appendChild(col_rating);
+
+				table.appendChild(row);
+			}
 		});
 	});
 }
