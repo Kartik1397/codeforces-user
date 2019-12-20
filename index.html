@@ -55,6 +55,10 @@ button {
 	width: 800px;
 	margin: 0 auto;
 }
+
+.solved {
+	background-color: #42f57b;
+}
 	</style>
 	<body>
 		<div class="top">
@@ -78,36 +82,56 @@ function show_user() {
 	const table = document.getElementById("status");
 
 	const url = "https://codeforces.com/api/problemset.problems";
+	const handle_url = "https://codeforces.com/api/user.status?handle="+handle+"&from=1";
 
-	fetch(url).then(function(response) {
+	var user_data;
+	var user_list;
+
+	const solved_problem_set = new Set();
+
+	fetch(handle_url).then( function(response) {
 		response.text().then(function(text) {
-			const obj = JSON.parse(text);
-			const list = obj.result.problems;
-			list.sort((a, b) => (a.rating < b.rating) ? -1 : 1);
-			for (let i = 0; i < list.length; i++) if (list[i].index === 'B') {
-				const row = document.createElement("tr");
-				const col_name = document.createElement("td");
-				const col_srno = document.createElement("td");
-				const col_rating = document.createElement("td");
-
-				const a = document.createElement("a");
-				const problemLink = "https://codeforces.com/problemset/problem/" + list[i].contestId + "/" + list[i].index;
-
-
-				a.setAttribute("href", problemLink);
-				a.innerHTML = list[i].contestId + list[i].index + " " + list[i].name;
-
-				col_srno.innerHTML = i+1;
-				col_name.appendChild(a);
-				col_rating.innerHTML = list[i].rating;
-
-				row.appendChild(col_srno);
-				row.appendChild(col_name);
-				row.appendChild(col_rating);
-
-				table.appendChild(row);
+			user_data = JSON.parse(text);
+			user_list = user_data.result;
+			for (let i = 0; i < user_list.length; i++) if (user_list[i].verdict === "OK") {
+				solved_problem_set.add(user_list[i].problem.contestId);
 			}
+			fetch(url).then(function(response) {
+				response.text().then(function(text) {
+					const obj = JSON.parse(text);
+					const list = obj.result.problems;
+					list.sort((a, b) => (a.rating < b.rating) ? -1 : 1);
+					for (let i = 0; i < list.length; i++) if (list[i].index === 'B') {
+						const row = document.createElement("tr");
+						const col_name = document.createElement("td");
+						const col_srno = document.createElement("td");
+						const col_rating = document.createElement("td");
+
+						const a = document.createElement("a");
+						const problemLink = "https://codeforces.com/problemset/problem/" + list[i].contestId + "/" + list[i].index;
+
+
+						a.setAttribute("href", problemLink);
+						a.innerHTML = list[i].contestId + list[i].index + " " + list[i].name;
+						console.log(list[i].contestId);	
+						if (solved_problem_set.has(list[i].contestId)) {
+							console.log("jhg");
+							row.className = 'solved';
+						}
+						col_srno.innerHTML = i+1;
+						col_name.appendChild(a);
+						col_rating.innerHTML = list[i].rating;
+
+						row.appendChild(col_srno);
+						row.appendChild(col_name);
+						row.appendChild(col_rating);
+
+						table.appendChild(row);
+					}
+				});
+			});
 		});
+
 	});
 }
 	</script>
