@@ -102,6 +102,9 @@ function show_user() {
 	const gbox = document.getElementById("gtype");
 	const hbox = document.getElementById("htype");
 
+	if (solved_count_node.parentNode !== null)
+		solved_count_node.parentNode.removeChild(solved_count_node);
+
 	while (table.firstChild) {
 		table.removeChild(table.firstChild);
 	}
