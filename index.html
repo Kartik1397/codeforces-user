@@ -85,6 +85,7 @@ label {
 		</div>
 	</body>
 	<script>
+var solved_count_node = document.createElement("p");
 
 function show_user() {
 	const input = document.getElementById("cfh");
@@ -113,7 +114,10 @@ function show_user() {
 	var user_list;
 
 	const solved_problem_set = new Set();
+	
 	var loading_node = document.createElement("p");
+
+	
 	loading_node.innerHTML = "Loading...";
 	table.parentNode.insertBefore(loading_node, table);
 		
@@ -138,7 +142,7 @@ function show_user() {
 				solved_problem_set.add(JSON.stringify({contestId: user_list[i].problem.contestId, index: user_list[i].problem.index}));
 			}
 			
-			var solved_count_node = document.createElement("p");
+
 			solved_count_node.innerHTML = "Solved: " + solved_count;
 			table.parentNode.insertBefore(solved_count_node, table);
 			
