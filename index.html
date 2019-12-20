@@ -10,7 +10,7 @@ body {
 }
 
 table {
-	font-family: cursive;
+	font-family: sans-serif;
 	width: 100%;
 	color: #000000;
 	font-size: .9em;
@@ -112,7 +112,6 @@ function show_user() {
 						const a = document.createElement("a");
 						const problemLink = "https://codeforces.com/problemset/problem/" + list[i].contestId + "/" + list[i].index;
 
-
 						a.setAttribute("href", problemLink);
 						a.innerHTML = list[i].contestId + list[i].index + " " + list[i].name;
 						if (solved_problem_set.has(JSON.stringify({contestId: list[i].contestId, index: list[i].index}))) {
@@ -132,7 +131,6 @@ function show_user() {
 				});
 			});
 		});
-
 	});
 }
 	</script>
