@@ -64,6 +64,7 @@ button {
 		<div class="top">
 			<input id="cfh" type="text" name="user_handle" placeholder="handle">
 			<button onclick="show_user()">Find</button>
+			
 			<table class="status-table" id="status">
 				<tr>
 					<th>#</th>
@@ -94,13 +95,14 @@ function show_user() {
 			user_data = JSON.parse(text);
 			user_list = user_data.result;
 			for (let i = 0; i < user_list.length; i++) if (user_list[i].verdict === "OK") {
-				solved_problem_set.add(user_list[i].problem.contestId);
+				solved_problem_set.add(JSON.stringify({contestId: user_list[i].problem.contestId, index: user_list[i].problem.index}));
 			}
 			fetch(url).then(function(response) {
 				response.text().then(function(text) {
 					const obj = JSON.parse(text);
 					const list = obj.result.problems;
 					list.sort((a, b) => (a.rating < b.rating) ? -1 : 1);
+					var num = 1;
 					for (let i = 0; i < list.length; i++) if (list[i].index === 'B') {
 						const row = document.createElement("tr");
 						const col_name = document.createElement("td");
@@ -113,12 +115,11 @@ function show_user() {
 
 						a.setAttribute("href", problemLink);
 						a.innerHTML = list[i].contestId + list[i].index + " " + list[i].name;
-						console.log(list[i].contestId);	
-						if (solved_problem_set.has(list[i].contestId)) {
-							console.log("jhg");
+						if (solved_problem_set.has(JSON.stringify({contestId: list[i].contestId, index: list[i].index}))) {
 							row.className = 'solved';
 						}
-						col_srno.innerHTML = i+1;
+						col_srno.innerHTML = num;
+						num = num + 1;
 						col_name.appendChild(a);
 						col_rating.innerHTML = list[i].rating;
 
