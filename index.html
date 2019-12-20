@@ -2,7 +2,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>CF-userinfo</title>
-	</head>
+	
 	<style>
 
 body {
@@ -43,9 +43,6 @@ a:hover {
 a:visited {
 	color: red;
 }
-input {
-		width: 70%;
-}
 
 button {
 		width: 29%;
@@ -59,19 +56,32 @@ button {
 .solved {
 	background-color: #42f57b;
 }
+
+.handle-style {
+	width: 70%;
+}
+label {
+	display: inline-block;
+	margin-right: 20px;
+	margin-top: 10px;
+}
 	</style>
+	</head>
 	<body>
 		<div class="top">
-			<input id="cfh" type="text" name="user_handle" placeholder="handle">
+			<input class="handle-style" id="cfh" type="text" name="user_handle" placeholder="handle">
 			<button onclick="show_user()">Find</button>
-			
-			<table class="status-table" id="status">
-				<tr>
-					<th>#</th>
-					<th>Problem Name</th>
-					<th>Rating</th>
-				</tr>
-			</table>
+			<div class="select-type">
+				<label for="atype"><input id="atype" type="checkbox" name="ptype" value="a"><span>A</span></label>	
+				<label for="btype"><input id="btype" type="checkbox" name="ptype" value="b"><span>B</span></label>	
+				<label for="ctype"><input id="ctype" type="checkbox" name="ptype" value="c"><span>C</span></label>	
+				<label for="dtype"><input id="dtype" type="checkbox" name="ptype" value="d"><span>D</span></label>	
+				<label for="etype"><input id="etype" type="checkbox" name="ptype" value="d"><span>E</span></label>	
+				<label for="ftype"><input id="ftype" type="checkbox" name="ptype" value="d"><span>F</span></label>	
+				<label for="gtype"><input id="gtype" type="checkbox" name="ptype" value="d"><span>G</span></label>	
+				<label for="htype"><input id="htype" type="checkbox" name="ptype" value="d"><span>H</span></label>	
+			</div>
+			<table class="status-table" id="status"></table>
 		</div>
 	</body>
 	<script>
@@ -80,7 +90,21 @@ function show_user() {
 	const input = document.getElementById("cfh");
 	const ul = document.getElementById("solved");
 	const handle = input.value;
+
 	const table = document.getElementById("status");
+	const abox = document.getElementById("atype");
+	const bbox = document.getElementById("btype");
+	const cbox = document.getElementById("ctype");
+	const dbox = document.getElementById("dtype");
+	const ebox = document.getElementById("etype");
+	const fbox = document.getElementById("ftype");
+	const gbox = document.getElementById("gtype");
+	const hbox = document.getElementById("htype");
+
+	while (table.firstChild) {
+		table.removeChild(table.firstChild);
+	}
+	table.innerHTML = "<tr><th>#</th><th>Problem Name</th><th>Rating</th></tr>";
 
 	const url = "https://codeforces.com/api/problemset.problems";
 	const handle_url = "https://codeforces.com/api/user.status?handle="+handle+"&from=1";
@@ -89,21 +113,43 @@ function show_user() {
 	var user_list;
 
 	const solved_problem_set = new Set();
-
+	var loading_node = document.createElement("p");
+	loading_node.innerHTML = "Loading...";
+	table.parentNode.insertBefore(loading_node, table);
+		
 	fetch(handle_url).then( function(response) {
 		response.text().then(function(text) {
 			user_data = JSON.parse(text);
 			user_list = user_data.result;
-			for (let i = 0; i < user_list.length; i++) if (user_list[i].verdict === "OK") {
+			
+			var box_checked = new Set();
+			if (abox.checked) box_checked.add("A");
+			if (bbox.checked) box_checked.add("B");
+			if (cbox.checked) box_checked.add("C");
+			if (dbox.checked) box_checked.add("D");
+			if (ebox.checked) box_checked.add("E");
+			if (fbox.checked) box_checked.add("F");
+			if (gbox.checked) box_checked.add("G");
+			if (hbox.checked) box_checked.add("H");
+			
+			var solved_count = 0;	
+			for (let i = 0; i < user_list.length; i++) if (user_list[i].verdict === "OK" && box_checked.has(user_list[i].problem.index)) {
+				solved_count = solved_count + 1;
 				solved_problem_set.add(JSON.stringify({contestId: user_list[i].problem.contestId, index: user_list[i].problem.index}));
 			}
+			
+			var solved_count_node = document.createElement("p");
+			solved_count_node.innerHTML = "Solved: " + solved_count;
+			table.parentNode.insertBefore(solved_count_node, table);
+			
 			fetch(url).then(function(response) {
 				response.text().then(function(text) {
 					const obj = JSON.parse(text);
 					const list = obj.result.problems;
 					list.sort((a, b) => (a.rating < b.rating) ? -1 : 1);
 					var num = 1;
-					for (let i = 0; i < list.length; i++) if (list[i].index === 'B') {
+
+					for (let i = 0; i < list.length; i++) if (box_checked.has(list[i].index)) {
 						const row = document.createElement("tr");
 						const col_name = document.createElement("td");
 						const col_srno = document.createElement("td");
@@ -128,10 +174,13 @@ function show_user() {
 
 						table.appendChild(row);
 					}
+					loading_node.parentNode.removeChild(loading_node);
 				});
 			});
 		});
+
 	});
+
 }
 	</script>
 </html>
