@@ -122,7 +122,7 @@ function show_user() {
 
 	
 	loading_node.innerHTML = "Loading...";
-	table.parentNode.insertBefore(loading_node, table);
+	table.appendChild(loading_node);
 		
 	fetch(handle_url).then( function(response) {
 		response.text().then(function(text) {
