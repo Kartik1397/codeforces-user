@@ -40,6 +40,9 @@ a:hover {
 	color: #36bcff;
 }
 
+a:visited {
+	color: red;
+}
 input {
 		width: 70%;
 }
@@ -74,29 +77,29 @@ function show_user() {
 	const handle = input.value;
 	const table = document.getElementById("status");
 
-	const url = "https://codeforces.com/api/user.status?handle=" + handle + "&from=1";
+	const url = "https://codeforces.com/api/problemset.problems";
 
 	fetch(url).then(function(response) {
 		response.text().then(function(text) {
 			const obj = JSON.parse(text);
-			const list = obj.result;
-
-			for (let i = 0; i < list.length; i++) {
+			const list = obj.result.problems;
+			list.sort((a, b) => (a.rating < b.rating) ? -1 : 1);
+			for (let i = 0; i < list.length; i++) if (list[i].index === 'B') {
 				const row = document.createElement("tr");
 				const col_name = document.createElement("td");
 				const col_srno = document.createElement("td");
 				const col_rating = document.createElement("td");
 
 				const a = document.createElement("a");
-				const problemLink = "https://codeforces.com/problemset/problem/" + list[i].problem.contestId + "/" + list[i].problem.index;
+				const problemLink = "https://codeforces.com/problemset/problem/" + list[i].contestId + "/" + list[i].index;
 
 
 				a.setAttribute("href", problemLink);
-				a.innerHTML = list[i].problem.contestId + list[i].problem.index + " " + list[i].problem.name;
+				a.innerHTML = list[i].contestId + list[i].index + " " + list[i].name;
 
 				col_srno.innerHTML = i+1;
 				col_name.appendChild(a);
-				col_rating.innerHTML = list[i].problem.rating;
+				col_rating.innerHTML = list[i].rating;
 
 				row.appendChild(col_srno);
 				row.appendChild(col_name);
