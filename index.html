@@ -2,7 +2,7 @@
 	<head>
 		<meta charset="utf-8">
 		<title>CF-userinfo</title>
-	
+
 	<style>
 
 body {
@@ -65,6 +65,9 @@ label {
 	margin-right: 20px;
 	margin-top: 10px;
 }
+.select-sort {
+	display: inline;
+}
 	</style>
 	</head>
 	<body>
@@ -72,122 +75,122 @@ label {
 			<input class="handle-style" id="cfh" type="text" name="user_handle" placeholder="handle">
 			<button onclick="show_user()">Find</button>
 			<div class="select-type">
-				<label for="atype"><input id="atype" type="checkbox" name="ptype" value="a"><span>A</span></label>	
-				<label for="btype"><input id="btype" type="checkbox" name="ptype" value="b"><span>B</span></label>	
-				<label for="ctype"><input id="ctype" type="checkbox" name="ptype" value="c"><span>C</span></label>	
-				<label for="dtype"><input id="dtype" type="checkbox" name="ptype" value="d"><span>D</span></label>	
-				<label for="etype"><input id="etype" type="checkbox" name="ptype" value="d"><span>E</span></label>	
-				<label for="ftype"><input id="ftype" type="checkbox" name="ptype" value="d"><span>F</span></label>	
-				<label for="gtype"><input id="gtype" type="checkbox" name="ptype" value="d"><span>G</span></label>	
-				<label for="htype"><input id="htype" type="checkbox" name="ptype" value="d"><span>H</span></label>	
+				<label for="atype"><input id="atype" type="checkbox" onclick="handle_check('A')" name="ptype" value="a"><span>A</span></label>
+				<label for="btype"><input id="btype" type="checkbox" onclick="handle_check('B')" name="ptype" value="b"><span>B</span></label>
+				<label for="ctype"><input id="ctype" type="checkbox" onclick="handle_check('C')" name="ptype" value="c"><span>C</span></label>
+				<label for="dtype"><input id="dtype" type="checkbox" onclick="handle_check('D')" name="ptype" value="d"><span>D</span></label>
+				<label for="etype"><input id="etype" type="checkbox" onclick="handle_check('E')" name="ptype" value="d"><span>E</span></label>
+				<label for="ftype"><input id="ftype" type="checkbox" onclick="handle_check('F')" name="ptype" value="d"><span>F</span></label>
+				<label for="gtype"><input id="gtype" type="checkbox" onclick="handle_check('G')" name="ptype" value="d"><span>G</span></label>
+				<label for="htype"><input id="htype" type="checkbox" onclick="handle_check('H')" name="ptype" value="d"><span>H</span></label>
 			</div>
+<!--	<div class"select-sort">
+				Sort By:
+				<select id="sort">
+					<option value="rating">Rating</option>
+					<option value="name">Name</option>
+				</select>
+			</div>
+-->
 			<table class="status-table" id="status"></table>
 		</div>
 	</body>
 	<script>
 var solved_count_node = document.createElement("p");
+var loading_node = document.createElement("p");
+const table = document.getElementById("status");
+const input = document.getElementById("cfh");
+const ul = document.getElementById("solved");
+const select = document.getElementsByTagName("select")[0];
+tr = table.getElementsByTagName("tr");
+
+table.innerHTML = "<tr><th>#</th><th>Problem Name</th><th>Rating</th></tr>";
+
+var list;
+
+loading_node.innerHTML = "Loading...";
+table.appendChild(loading_node);
+
+const url = "https://codeforces.com/api/problemset.problems";
+
+fetch(url).then(function(response) {
+	response.text().then(function(text) {
+		const obj = JSON.parse(text);
+		list = obj.result.problems;
+		list.sort((a, b) => (a.rating < b.rating) ? -1 : 1);
+
+		for (let i = 0; i < list.length; i++) {
+			const row = document.createElement("tr");
+			const col_name = document.createElement("td");
+			const col_srno = document.createElement("td");
+			const col_rating = document.createElement("td");
+
+			const a = document.createElement("a");
+			const problemLink = "https://codeforces.com/problemset/problem/" + list[i].contestId + "/" + list[i].index;
+
+			a.setAttribute("href", problemLink);
+			a.innerHTML = list[i].contestId + list[i].index + " " + list[i].name;
+			col_srno.innerHTML = i+1;
+			col_name.appendChild(a);
+			col_rating.innerHTML = list[i].rating;
+
+			row.appendChild(col_srno);
+			row.appendChild(col_name);
+			row.appendChild(col_rating);
+			table.appendChild(row);
+		}
+		loading_node.parentNode.removeChild(loading_node);
+	});
+});
+
+const solved_problem_set = new Set();
+const checked = new Set();
+
+function update_table() {
+	var num = 1;
+	solved_count = 0;
+	for (let i = 0; i < list.length; i++) if (checked.size===0 || checked.has(list[i].index)) {
+		if (solved_problem_set.has(JSON.stringify({contestId: list[i].contestId, index: list[i].index}))) {
+			tr[i+1].className = 'solved';
+			solved_count++;
+		} else {
+			tr[i+1].className = '';
+		}
+		tr[i+1].style.display = '';
+		const td = tr[i+1].getElementsByTagName("td")[0];
+		td.innerHTML = num;
+		num++;
+	} else {
+		tr[i+1].style.display = 'none';
+	}
+	solved_count_node.innerHTML = "Solved: " + solved_count;
+}
 
 function show_user() {
-	const input = document.getElementById("cfh");
-	const ul = document.getElementById("solved");
-	const handle = input.value;
-
-	const table = document.getElementById("status");
-	const abox = document.getElementById("atype");
-	const bbox = document.getElementById("btype");
-	const cbox = document.getElementById("ctype");
-	const dbox = document.getElementById("dtype");
-	const ebox = document.getElementById("etype");
-	const fbox = document.getElementById("ftype");
-	const gbox = document.getElementById("gtype");
-	const hbox = document.getElementById("htype");
-
 	if (solved_count_node.parentNode !== null)
 		solved_count_node.parentNode.removeChild(solved_count_node);
 
-	while (table.firstChild) {
-		table.removeChild(table.firstChild);
-	}
-	table.innerHTML = "<tr><th>#</th><th>Problem Name</th><th>Rating</th></tr>";
-
-	const url = "https://codeforces.com/api/problemset.problems";
+	const handle = input.value;
 	const handle_url = "https://codeforces.com/api/user.status?handle="+handle+"&from=1";
 
-	var user_data;
-	var user_list;
-
-	const solved_problem_set = new Set();
-	
-	var loading_node = document.createElement("p");
-
-	
-	loading_node.innerHTML = "Loading...";
-	table.appendChild(loading_node);
-		
 	fetch(handle_url).then( function(response) {
 		response.text().then(function(text) {
-			user_data = JSON.parse(text);
-			user_list = user_data.result;
-			
-			var box_checked = new Set();
-			if (abox.checked) box_checked.add("A");
-			if (bbox.checked) box_checked.add("B");
-			if (cbox.checked) box_checked.add("C");
-			if (dbox.checked) box_checked.add("D");
-			if (ebox.checked) box_checked.add("E");
-			if (fbox.checked) box_checked.add("F");
-			if (gbox.checked) box_checked.add("G");
-			if (hbox.checked) box_checked.add("H");
-			
-			var solved_count = 0;	
-			for (let i = 0; i < user_list.length; i++) if (user_list[i].verdict === "OK" && box_checked.has(user_list[i].problem.index)) {
-				solved_count = solved_count + 1;
+			user_list = JSON.parse(text).result;
+			solved_problem_set.clear();
+			for (let i = 0; i < user_list.length; i++) if (user_list[i].verdict === "OK") {
 				solved_problem_set.add(JSON.stringify({contestId: user_list[i].problem.contestId, index: user_list[i].problem.index}));
 			}
-			
 
-			solved_count_node.innerHTML = "Solved: " + solved_count;
 			table.parentNode.insertBefore(solved_count_node, table);
-			
-			fetch(url).then(function(response) {
-				response.text().then(function(text) {
-					const obj = JSON.parse(text);
-					const list = obj.result.problems;
-					list.sort((a, b) => (a.rating < b.rating) ? -1 : 1);
-					var num = 1;
-
-					for (let i = 0; i < list.length; i++) if (box_checked.has(list[i].index)) {
-						const row = document.createElement("tr");
-						const col_name = document.createElement("td");
-						const col_srno = document.createElement("td");
-						const col_rating = document.createElement("td");
-
-						const a = document.createElement("a");
-						const problemLink = "https://codeforces.com/problemset/problem/" + list[i].contestId + "/" + list[i].index;
-
-						a.setAttribute("href", problemLink);
-						a.innerHTML = list[i].contestId + list[i].index + " " + list[i].name;
-						if (solved_problem_set.has(JSON.stringify({contestId: list[i].contestId, index: list[i].index}))) {
-							row.className = 'solved';
-						}
-						col_srno.innerHTML = num;
-						num = num + 1;
-						col_name.appendChild(a);
-						col_rating.innerHTML = list[i].rating;
-
-						row.appendChild(col_srno);
-						row.appendChild(col_name);
-						row.appendChild(col_rating);
-
-						table.appendChild(row);
-					}
-					loading_node.parentNode.removeChild(loading_node);
-				});
-			});
+			update_table();
 		});
-
 	});
+}
 
+function handle_check(type) {
+	if (checked.has(type)) checked.delete(type);
+	else checked.add(type);
+	update_table();
 }
 	</script>
 </html>
